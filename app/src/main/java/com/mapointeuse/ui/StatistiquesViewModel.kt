@@ -23,7 +23,12 @@ data class StatistiquesUiState(
     val totalMinutes: Long = 0,
     val nombreJours: Int = 0,
     val moyenneParJour: Long = 0,
-    val isLoading: Boolean = false
+    val isLoading: Boolean = false,
+    // Données pour les graphiques
+    val minutesByDay: Map<DayOfWeek, Long> = emptyMap(),  // Pour le graphique en barres (semaine)
+    val minutesByDate: Map<LocalDate, Long> = emptyMap(), // Pour le graphique en ligne (mois)
+    val trendData: List<Float> = emptyList(),             // Pour le mini sparkline de tendance
+    val tendancePercentage: Float = 0f                    // % de changement vs période précédente
 )
 
 class StatistiquesViewModel(private val repository: PointageRepository) : ViewModel() {
@@ -46,14 +51,61 @@ class StatistiquesViewModel(private val repository: PointageRepository) : ViewMo
                 val nombreJours = pointages.map { it.date }.distinct().size
                 val moyenneParJour = if (nombreJours > 0) totalMinutes / nombreJours else 0
 
+                // Préparer les données pour les graphiques
+                val minutesByDay = if (periode == PeriodeStatistique.SEMAINE) {
+                    pointages.groupBy { it.date.dayOfWeek }
+                        .mapValues { entry -> entry.value.sumOf { it.tempsTravailleMinutes } }
+                } else emptyMap()
+
+                val minutesByDate = if (periode == PeriodeStatistique.MOIS || periode == PeriodeStatistique.ANNEE) {
+                    pointages.groupBy { it.date }
+                        .mapValues { entry -> entry.value.sumOf { it.tempsTravailleMinutes } }
+                } else emptyMap()
+
+                // Créer les données de tendance (derniers 7 jours d'heures)
+                val trendData = pointages.sortedBy { it.date }
+                    .takeLast(7)
+                    .map { (it.tempsTravailleMinutes / 60f) }
+
+                // Calculer la tendance (comparaison avec période précédente)
+                val tendancePercentage = calculateTendance(periode, startDate, endDate, totalMinutes)
+
                 _uiState.value = _uiState.value.copy(
                     pointages = pointages,
                     totalMinutes = totalMinutes,
                     nombreJours = nombreJours,
                     moyenneParJour = moyenneParJour,
+                    minutesByDay = minutesByDay,
+                    minutesByDate = minutesByDate,
+                    trendData = trendData,
+                    tendancePercentage = tendancePercentage,
                     isLoading = false
                 )
             }
+        }
+    }
+
+    private suspend fun calculateTendance(
+        periode: PeriodeStatistique,
+        startDate: LocalDate,
+        endDate: LocalDate,
+        currentTotal: Long
+    ): Float {
+        val daysDiff = java.time.temporal.ChronoUnit.DAYS.between(startDate, endDate).toInt() + 1
+        val previousStart = startDate.minusDays(daysDiff.toLong())
+        val previousEnd = endDate.minusDays(daysDiff.toLong())
+
+        var previousTotal = 0L
+        repository.getPointagesBetweenDates(previousStart, previousEnd).collect { pointages ->
+            previousTotal = pointages.sumOf { it.tempsTravailleMinutes }
+        }
+
+        return if (previousTotal > 0) {
+            ((currentTotal - previousTotal).toFloat() / previousTotal) * 100f
+        } else if (currentTotal > 0) {
+            100f // Si pas de données précédentes mais données actuelles = +100%
+        } else {
+            0f
         }
     }
 

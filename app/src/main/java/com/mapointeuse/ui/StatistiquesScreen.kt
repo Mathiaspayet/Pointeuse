@@ -5,19 +5,23 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.TrendingDown
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
+import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.ShowChart
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -34,14 +38,17 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.mapointeuse.R
 import com.mapointeuse.data.Pointage
 import com.mapointeuse.data.StatutPointage
+import com.mapointeuse.ui.components.*
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.temporal.TemporalAdjusters
 import java.util.Locale
+import kotlin.math.abs
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -129,6 +136,53 @@ fun StatistiquesScreen(
             }
 
             Spacer(modifier = Modifier.height(16.dp))
+
+            // Carte de tendance avec sparkline
+            if (uiState.trendData.isNotEmpty()) {
+                TrendCard(
+                    tendancePercentage = uiState.tendancePercentage,
+                    trendData = uiState.trendData
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+
+            // Graphiques selon la période
+            when (uiState.periode) {
+                PeriodeStatistique.SEMAINE -> {
+                    if (uiState.minutesByDay.isNotEmpty()) {
+                        ChartCard(
+                            title = "Heures par jour",
+                            icon = Icons.Default.BarChart
+                        ) {
+                            val chartData = prepareWeekChartData(
+                                uiState.minutesByDay,
+                                MaterialTheme.colorScheme.primary
+                            )
+                            BarChart(data = chartData)
+                        }
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
+                }
+                PeriodeStatistique.MOIS, PeriodeStatistique.ANNEE -> {
+                    if (uiState.minutesByDate.isNotEmpty()) {
+                        ChartCard(
+                            title = if (uiState.periode == PeriodeStatistique.MOIS) "Évolution du mois" else "Évolution de l'année",
+                            icon = Icons.Default.ShowChart
+                        ) {
+                            val sortedData = uiState.minutesByDate.toSortedMap()
+                            val chartData = sortedData.map { (date, minutes) ->
+                                ChartData(
+                                    label = date.dayOfMonth.toString(),
+                                    value = minutes / 60f
+                                )
+                            }
+                            LineChart(data = chartData)
+                        }
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
+                }
+                else -> {}
+            }
 
             Text(
                 text = stringResource(id = R.string.detail_pointages),
@@ -296,6 +350,110 @@ fun PointageItem(pointage: Pointage, onClick: () -> Unit) {
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
+        }
+    }
+}
+
+/**
+ * Carte de tendance avec pourcentage et mini graphique
+ */
+@Composable
+fun TrendCard(
+    tendancePercentage: Float,
+    trendData: List<Float>
+) {
+    val isPositive = tendancePercentage >= 0
+    val trendColor = if (isPositive) Color(0xFF4CAF50) else Color(0xFFFF5722)
+    val trendIcon = if (isPositive) Icons.AutoMirrored.Filled.TrendingUp else Icons.AutoMirrored.Filled.TrendingDown
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Tendance",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = trendIcon,
+                        contentDescription = null,
+                        tint = trendColor,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "${if (isPositive) "+" else ""}${String.format("%.1f", tendancePercentage)}%",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = trendColor
+                    )
+                }
+                Text(
+                    text = "vs période précédente",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                )
+            }
+
+            if (trendData.isNotEmpty()) {
+                TrendSparkline(
+                    data = trendData,
+                    modifier = Modifier.width(120.dp),
+                    color = trendColor
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Carte qui encapsule un graphique avec titre et icône
+ */
+@Composable
+fun ChartCard(
+    title: String,
+    icon: ImageVector,
+    content: @Composable () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        )
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp)
+                )
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            content()
         }
     }
 }
