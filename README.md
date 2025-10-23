@@ -35,6 +35,7 @@ _[Ajoutez vos captures d'écran ici]_
 - **Navigation** : Jetpack Navigation Compose
 - **Permissions** : Activity Result API
 - **Services** : Foreground Service pour le suivi en arrière-plan
+- **Geofencing** : Google Play Services Location API (Geofencing natif Android)
 - **Material Design** : Material 3 (Material You)
 
 ## 📋 Prérequis
@@ -91,7 +92,9 @@ app/src/main/java/com/mapointeuse/
 │   └── theme/                 # Thème Material Design
 ├── service/                   # Services en arrière-plan
 │   ├── PointageService.kt     # Service de suivi
-│   ├── GeofencingManager.kt   # Gestion du geofencing
+│   ├── GeofencingManager.kt   # Gestion du geofencing manuel
+│   ├── NativeGeofencingManager.kt  # Gestion du geofencing natif Android
+│   ├── GeofenceBroadcastReceiver.kt # Réception des événements geofence
 │   └── NotificationHelper.kt  # Gestion des notifications
 ├── utils/                     # Utilitaires
 │   └── PermissionHelper.kt    # Gestion des permissions
@@ -145,10 +148,22 @@ Une fois configuré, l'application détectera automatiquement quand vous arrivez
 
 ## 🧪 Tester le Geofencing (Émulateur)
 
-Pour tester la détection automatique GPS sur un émulateur Android :
+L'application dispose de **deux modes de geofencing** :
+
+### 1. **Geofencing Natif Android** (Recommandé - Mode par défaut)
+
+Ce mode utilise l'API native Android (Google Play Services Location) pour une détection ultra économe en batterie. Le système Android surveille votre position en permanence en arrière-plan, même si l'app est fermée.
+
+**Avantages** :
+- ⚡ Très économe en batterie (géré par le système Android)
+- 🔄 Fonctionne en permanence, même app fermée
+- 🎯 Pas de service en premier plan requis
+- ⏰ Détection automatique à l'arrivée/départ du travail
+
+**Test sur émulateur** :
 
 1. **Configurez un lieu de travail** dans l'onglet Paramètres
-2. **Démarrez un pointage** pour activer le service GPS
+2. **Acceptez toutes les permissions** (localisation + localisation en arrière-plan)
 3. **Simulez des déplacements GPS** via ADB :
 
 ```bash
@@ -164,13 +179,28 @@ adb -s emulator-5554 emu geo fix -122.084 37.421998
 
 4. **Vérifiez les logs** pour voir la détection :
 ```bash
-adb -s emulator-5554 logcat | grep "GeofencingManager"
+adb -s emulator-5554 logcat | grep "NativeGeofencing\|GeofenceBroadcastRcv"
 ```
 
 **Résultats attendus** :
-- Notification "Arrivée au bureau" avec bouton "Commencer"
-- Notification "Départ du bureau" avec bouton "Terminer"
-- Anti-spam : 5 minutes minimum entre notifications
+- ✅ Notification "Arrivée au bureau" avec bouton "Commencer"
+- ✅ Notification "Départ du bureau" avec bouton "Terminer"
+- ⏱️ Délai de stabilisation : 1 minute (évite les faux positifs)
+
+### 2. **Geofencing Manuel** (Mode legacy)
+
+Mode historique qui utilise un service en premier plan pour vérifier la position GPS toutes les 30 secondes. Nécessite qu'un pointage soit actif.
+
+**Avantages** :
+- 📍 Détection très précise
+- 🛠️ Configuration des actions automatiques (démarrage/arrêt auto)
+
+**Inconvénients** :
+- 🔋 Plus gourmand en batterie
+- 🏃 Nécessite un pointage actif
+- 🔔 Notification permanente du service
+
+Ce mode est toujours disponible mais le mode natif est recommandé pour une utilisation quotidienne.
 
 ## 🔄 Versions
 

@@ -16,7 +16,22 @@
       "Bash(export PATH=\"$JAVA_HOME/bin:$PATH\")",
       "Bash(git --version:*)",
       "Bash(git init:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git config:*)",
+      "Bash(git remote add:*)",
+      "Bash(git branch:*)",
+      "Bash(git push:*)",
+      "Bash(./gradlew.bat build:*)",
+      "Bash(./gradlew.bat assembleDebug:*)",
+      "Bash(adb uninstall:*)",
+      "Bash(./gradlew.bat installDebug:*)",
+      "Bash(adb install:*)",
+      "Bash(cat:*)",
+      "Bash(adb shell:*)",
+      "Bash(adb devices:*)",
+      "Bash(adb -s emulator-5554 emu geo fix:*)",
+      "Bash(adb:*)"
     ],
     "deny": [],
     "ask": []

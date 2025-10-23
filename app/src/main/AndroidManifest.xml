@@ -34,6 +34,19 @@
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="location" />
+
+        <!-- Service de démarrage/arrêt automatique avec délai d'annulation -->
+        <service
+            android:name=".service.AutoPointageService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="location" />
+
+        <!-- BroadcastReceiver pour le geofencing natif Android -->
+        <receiver
+            android:name=".service.GeofenceBroadcastReceiver"
+            android:enabled="true"
+            android:exported="false" />
     </application>
 
 </manifest>

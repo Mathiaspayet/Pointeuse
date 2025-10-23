@@ -125,10 +125,15 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    MainScreen(repository)
+                    MainScreen(repository, intent)
                 }
             }
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
     }
 
     private fun checkAndRequestPermissions() {
@@ -171,9 +176,23 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun MainScreen(repository: PointageRepository) {
+fun MainScreen(repository: PointageRepository, intent: Intent?) {
     val navController = rememberNavController()
     val context = LocalContext.current
+
+    // Gérer les actions provenant des notifications de geofencing
+    LaunchedEffect(intent?.action) {
+        when (intent?.action) {
+            "START_WORK" -> {
+                Log.d("MainActivity", "START_WORK action received from geofencing notification")
+                navController.navigate(Screen.Pointage.route)
+            }
+            "STOP_WORK" -> {
+                Log.d("MainActivity", "STOP_WORK action received from geofencing notification")
+                navController.navigate(Screen.Pointage.route)
+            }
+        }
+    }
 
     Scaffold(
         bottomBar = {

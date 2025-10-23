@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.mapointeuse.data.AppDatabase
 import com.mapointeuse.data.WorkPlace
 import com.mapointeuse.data.WorkPlaceDao
+import com.mapointeuse.service.NativeGeofencingManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -30,6 +31,8 @@ class ParametresViewModel(
 
     private val _uiState = MutableStateFlow(ParametresUiState())
     val uiState: StateFlow<ParametresUiState> = _uiState.asStateFlow()
+
+    private val nativeGeofencingManager = NativeGeofencingManager(context)
 
     init {
         loadWorkPlace()
@@ -77,9 +80,13 @@ class ParametresViewModel(
                 val id = workPlaceDao.insert(workPlace)
                 workPlaceDao.deactivateOthers(id)
 
+                // Enregistrer le geofence natif Android
+                val savedWorkPlace = workPlace.copy(id = id)
+                nativeGeofencingManager.registerGeofence(savedWorkPlace)
+
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    successMessage = "Lieu de travail enregistré"
+                    successMessage = "Lieu de travail enregistré avec détection automatique activée"
                 )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
@@ -94,10 +101,13 @@ class ParametresViewModel(
         viewModelScope.launch {
             try {
                 _uiState.value.workPlace?.let { workPlace ->
+                    // Désenregistrer le geofence natif Android
+                    nativeGeofencingManager.unregisterGeofence(workPlace.id)
+
                     workPlaceDao.delete(workPlace)
                     _uiState.value = _uiState.value.copy(
                         workPlace = null,
-                        successMessage = "Lieu de travail supprimé"
+                        successMessage = "Lieu de travail supprimé et détection automatique désactivée"
                     )
                 }
             } catch (e: Exception) {
