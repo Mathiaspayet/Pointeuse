@@ -204,7 +204,28 @@ Ce mode est toujours disponible mais le mode natif est recommandé pour une util
 
 ## 🔄 Versions
 
-### Version 1.1 (Actuelle)
+### Version 1.2 (Actuelle) - 23 octobre 2025
+
+**🚀 Nouvelle fonctionnalité majeure : Geofencing Natif Android**
+
+- ✅ **Geofencing natif avec Google Play Services Location**
+  - Ultra économe en batterie (géré par le système Android)
+  - Fonctionne 24/7 même si l'app est fermée
+  - Détection automatique de l'arrivée et du départ
+
+- ✅ **Démarrage/Pause automatique intelligent**
+  - Arrivée au bureau → Démarrage auto après 10 secondes (annulable)
+  - Départ du bureau → Pause auto après 10 secondes (annulable)
+  - Notifications non intrusives (1 au début + 1 confirmation)
+  - Aucun spam de notifications
+
+- ✅ **Expérience utilisateur optimisée**
+  - Compte à rebours de 10 secondes avec bouton "Annuler"
+  - Messages de confirmation clairs
+  - Départ = Pause (pas de fin de journée automatique)
+  - Vérifications anti-doublons
+
+### Version 1.1 - 22 octobre 2025
 
 - ✅ Interface utilisateur moderne et épurée
 - ✅ Système de pointage complet
@@ -212,9 +233,9 @@ Ce mode est toujours disponible mais le mode natif est recommandé pour une util
 - ✅ Statistiques détaillées
 - ✅ Historique complet
 - ✅ Support de la géolocalisation
-- ✅ **Détection automatique par GPS (Geofencing)**
-- ✅ **Notifications intelligentes avec actions rapides**
-- ✅ **Configuration du lieu de travail**
+- ✅ Détection automatique par GPS (Geofencing manuel)
+- ✅ Notifications intelligentes avec actions rapides
+- ✅ Configuration du lieu de travail
 - ✅ Notifications en temps réel
 - ✅ Accessibilité complète
 
