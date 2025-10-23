@@ -140,8 +140,37 @@ Une fois configuré, l'application détectera automatiquement quand vous arrivez
 ## 📱 Permissions requises
 
 - **Localisation** : Pour enregistrer votre position lors des pointages
-- **Localisation en arrière-plan** : Pour le suivi continu
-- **Notifications** : Pour afficher les notifications de suivi
+- **Localisation en arrière-plan** : Pour le suivi continu et le geofencing
+- **Notifications** : Pour afficher les notifications de suivi et de geofencing
+
+## 🧪 Tester le Geofencing (Émulateur)
+
+Pour tester la détection automatique GPS sur un émulateur Android :
+
+1. **Configurez un lieu de travail** dans l'onglet Paramètres
+2. **Démarrez un pointage** pour activer le service GPS
+3. **Simulez des déplacements GPS** via ADB :
+
+```bash
+# Position initiale (au bureau)
+adb -s emulator-5554 emu geo fix -122.084 37.421998
+
+# Sortir de la zone (>100m)
+adb -s emulator-5554 emu geo fix -122.082 37.421998
+
+# Retourner au bureau
+adb -s emulator-5554 emu geo fix -122.084 37.421998
+```
+
+4. **Vérifiez les logs** pour voir la détection :
+```bash
+adb -s emulator-5554 logcat | grep "GeofencingManager"
+```
+
+**Résultats attendus** :
+- Notification "Arrivée au bureau" avec bouton "Commencer"
+- Notification "Départ du bureau" avec bouton "Terminer"
+- Anti-spam : 5 minutes minimum entre notifications
 
 ## 🔄 Versions
 
