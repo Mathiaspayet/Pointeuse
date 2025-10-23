@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find:*)",
+      "Bash(tree:*)",
+      "Bash(.gradlew.bat build:*)",
+      "Bash(gradlew.bat build:*)",
+      "Bash(.gradlew assembleDebug:*)",
+      "Bash(gradlew.bat assembleDebug:*)",
+      "Bash(gradlew.bat uninstallAll:*)",
+      "Bash(.gradlew.bat uninstallAll)",
+      "Bash(./gradlew assembleDebug:*)",
+      "Bash(java:*)",
+      "Bash(where:*)",
+      "Bash(export JAVA_HOME=\"C:/Program Files/Microsoft/jdk-17.0.16.8-hotspot\")",
+      "Bash(export PATH=\"$JAVA_HOME/bin:$PATH\")",
+      "Bash(git --version:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

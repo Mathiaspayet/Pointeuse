@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MaPointeuse</string>
+    <string name="debut_journee">Début de journée</string>
+    <string name="fin_journee">Fin de journée</string>
+    <string name="debut_pause">Début pause</string>
+    <string name="fin_pause">Fin pause</string>
+    <string name="temps_travaille">Temps travaillé</string>
+    <string name="statistiques">Statistiques</string>
+    <string name="accueil">Accueil</string>
+    <string name="jour">Jour</string>
+    <string name="semaine">Semaine</string>
+    <string name="mois">Mois</string>
+    <string name="annee">Année</string>
+    <string name="pointage">Pointage</string>
+    <string name="status_en_cours">En cours</string>
+    <string name="status_en_pause">En pause</string>
+    <string name="status_termine">Terminé</string>
+    <string name="status_pas_de_pointage">Pas de pointage</string>
+    <string name="debut_time">Début: %1$s</string>
+    <string name="fin_time">Fin: %1$s</string>
+    <string name="commencer_journee">Commencer la journée</string>
+    <string name="bouton_pause">Pause</string>
+    <string name="bouton_reprendre">Reprendre</string>
+    <string name="terminer_journee">Terminer la journée</string>
+    <string name="ok">OK</string>
+    <!-- Permissions dialog -->
+    <string name="permissions_title">Permissions requises</string>
+    <string name="permissions_message">L\'application a besoin des permissions de localisation pour fonctionner correctement en arrière-plan.</string>
+    <string name="settings">Paramètres</string>
+    <string name="cancel">Annuler</string>
+    <!-- Notifications -->
+    <string name="notif_pointage_pause">Pointage en pause</string>
+    <string name="notif_pointage_cours">Pointage en cours</string>
+    <string name="notif_depuis_time">Depuis %1$s</string>
+    <string name="notif_position_xy">Position: %1$s, %2$s</string>
+    <string name="notif_travail_commence">Travail commencé</string>
+    <string name="notif_pointage_demarree">Votre pointage a démarré</string>
+    <string name="notif_travail_termine">Travail terminé</string>
+    <string name="notif_duree_label">Durée: %1$s</string>
+    <string name="historique">Historique</string>
+    <string name="sessions_du_jour">Sessions du jour</string>
+    <string name="aucune_session_aujourdhui">Aucune session aujourd\'hui</string>
+    <string name="temps_total">Temps total</string>
+    <string name="temps_session">Durée de la session</string>
+    <string name="nb_jours">Jours</string>
+    <string name="moyenne_par_jour">Moyenne/jour</string>
+    <string name="detail_pointages">Détail des pointages</string>
+    <string name="aucun_pointage_periode">Aucun pointage pour cette période</string>
+    <string name="aucun_pointage_historique">Aucun pointage enregistré</string>
+    <!-- Accessibility descriptions -->
+    <string name="cd_status_icon">Icône de statut</string>
+    <string name="cd_time_icon">Icône d\'heure</string>
+    <string name="cd_timer_icon">Icône de chronomètre</string>
+    <string name="cd_start_work">Commencer la journée de travail</string>
+    <string name="cd_pause_work">Mettre en pause le travail</string>
+    <string name="cd_resume_work">Reprendre le travail</string>
+    <string name="cd_end_work">Terminer la journée de travail</string>
+    <string name="cd_nav_pointage">Navigation vers le pointage</string>
+    <string name="cd_nav_statistiques">Navigation vers les statistiques</string>
+    <string name="cd_nav_historique">Navigation vers l\'historique</string>
+    <string name="cd_dismiss_error">Fermer le message d\'erreur</string>
+    <!-- Additional useful strings -->
+    <string name="chargement_en_cours">Chargement en cours…</string>
+    <string name="enregistrement_en_cours">Enregistrement en cours…</string>
+    <string name="modification_enregistree">Modification enregistrée</string>
+    <string name="erreur_reseau">Erreur de connexion réseau</string>
+    <string name="erreur_inconnue">Une erreur est survenue</string>
+</resources>

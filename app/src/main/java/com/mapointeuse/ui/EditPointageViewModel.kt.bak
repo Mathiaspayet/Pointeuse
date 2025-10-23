@@ -1,0 +1,143 @@
+package com.mapointeuse.ui
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
+import com.mapointeuse.data.Pointage
+import com.mapointeuse.data.PointageRepository
+import com.mapointeuse.data.StatutPointage
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+
+data class EditPointageUiState(
+    val pointage: Pointage? = null,
+    val isLoading: Boolean = false,
+    val isSaving: Boolean = false,
+    val errorMessage: String? = null,
+    val successMessage: String? = null
+)
+
+class EditPointageViewModel(
+    private val repository: PointageRepository,
+    private val pointageId: Long
+) : ViewModel() {
+
+    private val _uiState = MutableStateFlow(EditPointageUiState())
+    val uiState: StateFlow<EditPointageUiState> = _uiState.asStateFlow()
+
+    init {
+        loadPointage()
+    }
+
+    private fun loadPointage() {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true)
+            try {
+                val pointage = repository.getPointageById(pointageId)
+                _uiState.value = _uiState.value.copy(
+                    pointage = pointage,
+                    isLoading = false
+                )
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    errorMessage = "Erreur de chargement: ${e.message}",
+                    isLoading = false
+                )
+            }
+        }
+    }
+
+    fun updateHeureDebut(time: LocalTime) {
+        val pointage = _uiState.value.pointage ?: return
+        val newHeureDebut = LocalDateTime.of(pointage.date, time)
+        _uiState.value = _uiState.value.copy(
+            pointage = pointage.copy(heureDebut = newHeureDebut)
+        )
+    }
+
+    fun updateHeureFin(time: LocalTime?) {
+        val pointage = _uiState.value.pointage ?: return
+        val newHeureFin = time?.let { LocalDateTime.of(pointage.date, it) }
+        _uiState.value = _uiState.value.copy(
+            pointage = pointage.copy(heureFin = newHeureFin)
+        )
+    }
+
+    fun updateStatut(statut: StatutPointage) {
+        val pointage = _uiState.value.pointage ?: return
+        _uiState.value = _uiState.value.copy(
+            pointage = pointage.copy(statut = statut)
+        )
+    }
+
+    fun saveChanges() {
+        viewModelScope.launch {
+            val pointage = _uiState.value.pointage
+            if (pointage == null) {
+                _uiState.value = _uiState.value.copy(errorMessage = "Aucun pointage à sauvegarder")
+                return@launch
+            }
+
+            _uiState.value = _uiState.value.copy(isSaving = true, errorMessage = null)
+            try {
+                repository.updatePointage(pointage)
+                _uiState.value = _uiState.value.copy(
+                    isSaving = false,
+                    successMessage = "Modifications enregistrées"
+                )
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    errorMessage = "Erreur de sauvegarde: ${e.message}",
+                    isSaving = false
+                )
+            }
+        }
+    }
+
+    fun deletePointage() {
+        viewModelScope.launch {
+            val pointage = _uiState.value.pointage
+            if (pointage == null) {
+                _uiState.value = _uiState.value.copy(errorMessage = "Aucun pointage à supprimer")
+                return@launch
+            }
+
+            try {
+                repository.deletePointage(pointage)
+                _uiState.value = _uiState.value.copy(
+                    successMessage = "Pointage supprimé"
+                )
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    errorMessage = "Erreur de suppression: ${e.message}"
+                )
+            }
+        }
+    }
+
+    fun clearMessages() {
+        _uiState.value = _uiState.value.copy(
+            errorMessage = null,
+            successMessage = null
+        )
+    }
+}
+
+class EditPointageViewModelFactory(
+    private val repository: PointageRepository,
+    private val pointageId: Long
+) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(EditPointageViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return EditPointageViewModel(repository, pointageId) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
+    }
+}
+
