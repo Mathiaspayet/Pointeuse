@@ -10,6 +10,7 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -64,6 +65,7 @@ sealed class Screen(val route: String, val title: String) {
     object Pointage : Screen("pointage", "Pointage")
     object Statistiques : Screen("statistiques", "Statistiques")
     object Historique : Screen("historique", "Historique")
+    object Parametres : Screen("parametres", "Paramètres")
     object EditPointage : Screen("edit_pointage/{pointageId}", "Modifier")
 
     fun createRoute(vararg args: Any): String {
@@ -107,6 +109,9 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Installer le splash screen avant super.onCreate()
+        installSplashScreen()
+
         super.onCreate(savedInstanceState)
 
         val database = AppDatabase.getDatabase(applicationContext)
@@ -220,6 +225,21 @@ fun MainScreen(repository: PointageRepository) {
                         }
                     }
                 )
+
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Settings, contentDescription = "Navigation vers les paramètres") },
+                    label = { Text("Paramètres") },
+                    selected = currentRoute == Screen.Parametres.route,
+                    onClick = {
+                        navController.navigate(Screen.Parametres.route) {
+                            popUpTo(navController.graph.startDestinationId) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
+                )
             }
         }
     ) { paddingValues ->
@@ -257,6 +277,13 @@ fun MainScreen(repository: PointageRepository) {
                         navController.navigate(Screen.EditPointage.createRoute(pointageId))
                     }
                 )
+            }
+
+            composable(Screen.Parametres.route) {
+                val vm: ParametresViewModel = viewModel(
+                    factory = ParametresViewModelFactory(context)
+                )
+                ParametresScreen(viewModel = vm)
             }
 
             composable(

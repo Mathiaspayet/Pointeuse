@@ -12,7 +12,9 @@ import android.os.Binder
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.ActivityCompat
+import com.mapointeuse.data.AppDatabase
 import com.mapointeuse.data.PointageRepository
+import com.mapointeuse.data.WorkPlace
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -29,9 +31,11 @@ class PointageService : Service(), LocationListener {
     private lateinit var repository: PointageRepository
     private lateinit var notificationHelper: NotificationHelper
     private lateinit var locationManager: LocationManager
+    private lateinit var geofencingManager: GeofencingManager
 
     private var currentLocation: Location? = null
     private var isTracking = false
+    private var activeWorkPlace: WorkPlace? = null
 
     companion object {
         private const val TAG = "PointageService"
@@ -75,6 +79,7 @@ class PointageService : Service(), LocationListener {
 
         notificationHelper = NotificationHelper(this)
         locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        geofencingManager = GeofencingManager(this)
 
         // Le repository sera injecté via Application
         val app = application as com.mapointeuse.MaPointeuseApplication
@@ -110,6 +115,9 @@ class PointageService : Service(), LocationListener {
             location = null
         )
         startForeground(NOTIFICATION_ID, notification)
+
+        // Charger le lieu de travail actif pour le geofencing
+        loadActiveWorkPlace()
 
         // Démarrer le suivi de localisation
         startLocationUpdates()
@@ -198,10 +206,32 @@ class PointageService : Service(), LocationListener {
         }
     }
 
+    private fun loadActiveWorkPlace() {
+        serviceScope.launch {
+            val database = AppDatabase.getDatabase(applicationContext)
+            database.workPlaceDao().getActiveWorkPlace().collect { workPlace ->
+                activeWorkPlace = workPlace
+                if (workPlace != null) {
+                    Log.d(TAG, "Active workplace loaded: ${workPlace.name}")
+                    // Réinitialiser le gestionnaire de géofencing avec le nouveau lieu
+                    geofencingManager.reset()
+                } else {
+                    Log.d(TAG, "No active workplace configured")
+                }
+            }
+        }
+    }
+
     // LocationListener methods
     override fun onLocationChanged(location: Location) {
         currentLocation = location
         Log.d(TAG, "Location updated: ${location.latitude}, ${location.longitude}")
+
+        // Vérifier la géolocalisation si un lieu de travail est configuré
+        activeWorkPlace?.let { workPlace ->
+            geofencingManager.checkLocation(location, workPlace)
+        }
+
         updateNotification()
     }
 

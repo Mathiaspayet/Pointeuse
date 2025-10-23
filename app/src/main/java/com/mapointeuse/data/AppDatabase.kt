@@ -7,13 +7,14 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 
 @Database(
-    entities = [Pointage::class, Pause::class],
-    version = 5,
+    entities = [Pointage::class, Pause::class, WorkPlace::class],
+    version = 6,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun pointageDao(): PointageDao
+    abstract fun workPlaceDao(): WorkPlaceDao
 
     companion object {
         @Volatile

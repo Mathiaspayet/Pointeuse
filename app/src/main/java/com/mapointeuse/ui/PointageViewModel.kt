@@ -11,9 +11,11 @@ import com.mapointeuse.service.PointageService
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -34,19 +36,15 @@ class PointageViewModel(
     private val context: Context
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(PointageUiState())
+    private var timerJob: Job? = null
+    private val today = LocalDate.now()
+
+    private val _uiState = MutableStateFlow(PointageUiState(isLoading = true))
     val uiState: StateFlow<PointageUiState> = _uiState.asStateFlow()
 
-    private var timerJob: Job? = null
-
     init {
-        loadTodayPointage()
-    }
-
-    private fun loadTodayPointage() {
-        val today = LocalDate.now()
+        // Charger de manière asynchrone sans bloquer
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true)
             combine(
                 repository.observeActivePointageForDate(today),
                 repository.getPointagesForDate(today)
@@ -60,8 +58,7 @@ class PointageViewModel(
                     pointagesJour = pointages,
                     sessionDurationSeconds = durationSeconds,
                     totalMinutesJour = totalMinutes,
-                    isLoading = false,
-                    errorMessage = null
+                    isLoading = false
                 )
                 scheduleTimer(active)
             }

@@ -17,7 +17,8 @@ Application Android moderne de gestion de pointage et de suivi du temps de trava
 - 📊 **Statistiques détaillées** - Vue par jour, semaine, mois et année
 - 📜 **Historique complet** - Consultez tous vos pointages passés
 - 📍 **Géolocalisation** - Enregistrement automatique de votre position
-- 🔔 **Notifications** - Suivi en arrière-plan avec notifications persistantes
+- 🎯 **Détection automatique** - Geofencing GPS pour démarrer/arrêter automatiquement au lieu de travail
+- 🔔 **Notifications intelligentes** - Notifications avec actions rapides à l'arrivée/départ du travail
 - 🎨 **Interface moderne** - Design Material Design 3 épuré et intuitif
 - ♿ **Accessible** - Support complet des lecteurs d'écran
 
@@ -72,7 +73,9 @@ app/src/main/java/com/mapointeuse/
 │   ├── AppDatabase.kt         # Configuration Room Database
 │   ├── Pointage.kt            # Entité Pointage
 │   ├── Pause.kt               # Entité Pause
+│   ├── WorkPlace.kt           # Entité Lieu de travail
 │   ├── PointageDao.kt         # Data Access Object
+│   ├── WorkPlaceDao.kt        # DAO pour lieux de travail
 │   ├── PointageRepository.kt  # Repository pattern
 │   └── Converters.kt          # Type converters Room
 ├── ui/                        # Interface utilisateur
@@ -83,9 +86,12 @@ app/src/main/java/com/mapointeuse/
 │   ├── HistoriqueScreen.kt
 │   ├── EditPointageViewModel.kt
 │   ├── EditPointageScreen.kt
+│   ├── ParametresViewModel.kt # ViewModel paramètres
+│   ├── ParametresScreen.kt    # Écran de configuration
 │   └── theme/                 # Thème Material Design
 ├── service/                   # Services en arrière-plan
 │   ├── PointageService.kt     # Service de suivi
+│   ├── GeofencingManager.kt   # Gestion du geofencing
 │   └── NotificationHelper.kt  # Gestion des notifications
 ├── utils/                     # Utilitaires
 │   └── PermissionHelper.kt    # Gestion des permissions
@@ -116,6 +122,21 @@ app/src/main/java/com/mapointeuse/
 - Sélectionnez la période (Jour/Semaine/Mois/Année)
 - Consultez votre temps total et moyenne
 
+### Configurer la détection automatique (Geofencing)
+
+1. Naviguez vers l'onglet **"Paramètres"**
+2. Renseignez le nom de votre lieu de travail
+3. Entrez les coordonnées GPS ou appuyez sur **"Utiliser ma position actuelle"**
+4. Ajustez le rayon de détection (par défaut 100m)
+5. Activez les options souhaitées :
+   - **Notification à l'arrivée** : Recevez une notification avec action rapide
+   - **Notification au départ** : Recevez une notification avec action rapide
+   - **Démarrage automatique** ⚠️ (expérimental) : Lance le pointage automatiquement
+   - **Arrêt automatique** ⚠️ (expérimental) : Termine le pointage automatiquement
+6. Appuyez sur **"Enregistrer"**
+
+Une fois configuré, l'application détectera automatiquement quand vous arrivez ou quittez votre lieu de travail et vous proposera de commencer/terminer votre journée.
+
 ## 📱 Permissions requises
 
 - **Localisation** : Pour enregistrer votre position lors des pointages
@@ -124,7 +145,7 @@ app/src/main/java/com/mapointeuse/
 
 ## 🔄 Versions
 
-### Version 1.0 (Actuelle)
+### Version 1.1 (Actuelle)
 
 - ✅ Interface utilisateur moderne et épurée
 - ✅ Système de pointage complet
@@ -132,6 +153,9 @@ app/src/main/java/com/mapointeuse/
 - ✅ Statistiques détaillées
 - ✅ Historique complet
 - ✅ Support de la géolocalisation
+- ✅ **Détection automatique par GPS (Geofencing)**
+- ✅ **Notifications intelligentes avec actions rapides**
+- ✅ **Configuration du lieu de travail**
 - ✅ Notifications en temps réel
 - ✅ Accessibilité complète
 
